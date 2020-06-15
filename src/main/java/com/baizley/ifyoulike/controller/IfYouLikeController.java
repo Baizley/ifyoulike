@@ -6,9 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -22,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@RestController
+@Controller
 public class IfYouLikeController {
 
     private final AccessToken accessToken;
@@ -36,7 +37,7 @@ public class IfYouLikeController {
     }
 
     @RequestMapping(value = "/ifyoulike{blank}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> ifYouLike(@PathVariable String blank) throws UnsupportedEncodingException {
+    public ResponseEntity<String> ifYouLikeJson(@PathVariable String blank) throws UnsupportedEncodingException {
 
         String encodedBlank = URLEncoder.encode(blank, StandardCharsets.UTF_8.toString());
         // TODO: Check status codes
@@ -83,5 +84,10 @@ public class IfYouLikeController {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    @RequestMapping(value = "/ifyoulike{blank}")
+    public String ifYouLikeHtml(@PathVariable String blank, Model model) {
+        return "index";
     }
 }
