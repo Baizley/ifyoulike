@@ -29,11 +29,13 @@ public class Authorization {
     }
 
     public AccessToken fetchAccessToken() {
+        // TODO: Add logic for refreshing access token using refresh token.
         if (accessToken != null) {
             return accessToken;
         }
 
         try {
+            // TODO: Check status codes.
             HttpRequest accessTokenRequest = HttpRequest.newBuilder()
                     .header("Accept", "application/json")
                     .header("Authorization", "Basic " + AUTHORIZATION_HEADER)

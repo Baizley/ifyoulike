@@ -31,7 +31,6 @@ public class CommentService {
 
     public JSONArray retrieveTopLevelComments(String blank) {
         try {
-            // TODO: Check status codes
             JSONArray threads = performSubredditSearch(blank);
 
             JSONArray comments = new JSONArray();
@@ -64,6 +63,7 @@ public class CommentService {
 
     private JSONArray fetchTread(String threadId) throws URISyntaxException, IOException, InterruptedException {
         return new JSONArray(
+                    // TODO: Check status codes.
                     httpClient.send(
                             HttpRequest.newBuilder()
                                     .header("Authorization", accessToken.toHeader())
@@ -79,6 +79,7 @@ public class CommentService {
         String encodedBlank = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString());
 
         JSONObject body = new JSONObject(
+                // TODO: Check status codes.
                 httpClient.send(
                         HttpRequest.newBuilder()
                                 .header("Authorization", accessToken.toHeader())
