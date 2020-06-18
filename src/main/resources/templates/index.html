@@ -7,6 +7,15 @@
     </head>
     <body>
 
+    <table>
+        <tr>
+            <th>Recommendations from Reddit Comments</th>
+        </tr>
+        <tr th:each="comment : ${comments}">
+            <td th:text="${comment}"></td>
+        </tr>
+    </table>
+
     <div id="react"></div>
 
     <script src="built/bundle.js"></script>

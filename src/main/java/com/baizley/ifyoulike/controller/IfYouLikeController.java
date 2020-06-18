@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -32,6 +31,9 @@ public class IfYouLikeController {
 
     @RequestMapping(value = "/ifyoulike{blank}")
     public String ifYouLikeHtml(@PathVariable String blank, Model model) {
+
+        model.addAttribute("comments", commentService.retrieveTopLevelComments(blank));
+
         return "index";
     }
 }
