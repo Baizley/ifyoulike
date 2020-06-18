@@ -1,5 +1,6 @@
 package com.baizley.ifyoulike.authorization;
 
+import com.baizley.ifyoulike.Environment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -9,12 +10,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Base64;
-import java.util.Optional;
 
 public class Authorization {
 
-    private static final String AUTHORIZATION_HEADER = new String(Base64.getEncoder().encode(readEnvVar("BASIC_AUTHORIZATION").getBytes()));
-    private static final String USER_AGENT = readEnvVar("USER_AGENT");
+    private static final String AUTHORIZATION_HEADER = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
+    private static final String USER_AGENT = Environment.read("USER_AGENT");
 
     private final HttpClient httpClient;
     private final String username;
@@ -24,8 +24,8 @@ public class Authorization {
 
     public Authorization() {
         this.httpClient = HttpClient.newHttpClient();
-        this.username = readEnvVar("REDDIT_USERNAME");
-        this.password = readEnvVar("REDDIT_PASSWORD");
+        this.username = Environment.read("REDDIT_USERNAME");
+        this.password = Environment.read("REDDIT_PASSWORD");
     }
 
     public AccessToken fetchAccessToken() {
@@ -61,8 +61,12 @@ public class Authorization {
         }
     }
 
-    private static String readEnvVar(String envVar) {
-        return Optional.ofNullable(System.getenv(envVar))
-                .orElseThrow(() -> new RuntimeException(envVar));
+    private static String base64Encode(String content) {
+        return new String(
+                Base64.getEncoder()
+                      .encode(
+                          content.getBytes()
+                      )
+        );
     }
 }
