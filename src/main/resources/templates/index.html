@@ -6,12 +6,19 @@
         <link rel="stylesheet" href="/main.css" />
     </head>
     <body>
+    <style>
+      table.center {
+        margin-left:auto;
+        margin-right:auto;
+        width: 25%;
+      }
+    </style>
 
-    <table>
+    <table class="center">
         <tr>
             <th>Recommendations from Reddit Comments</th>
         </tr>
-        <tr th:each="comment : ${comments}">
+        <tr th:each="comment : ${comments}" >
             <td th:text="${comment}"></td>
         </tr>
     </table>
