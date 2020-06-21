@@ -2,6 +2,7 @@ package com.baizley.ifyoulike.authorization;
 
 import com.baizley.ifyoulike.Environment;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.net.URI;
@@ -54,7 +55,7 @@ public class Authorization {
 
             HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
 
-            this.accessToken = new ObjectMapper().readValue(response.body(), AccessToken.class);
+            this.accessToken = new Gson().fromJson(response.body(), AccessToken.class);
 
             return accessToken;
         } catch (URISyntaxException | InterruptedException | IOException e) {

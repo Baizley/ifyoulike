@@ -2,11 +2,16 @@ package com.baizley.ifyoulike.service;
 
 import com.baizley.ifyoulike.authorization.AccessToken;
 import com.baizley.ifyoulike.authorization.Authorization;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.baizley.ifyoulike.model.Comment;
+import com.baizley.ifyoulike.model.Listing;
+import com.baizley.ifyoulike.model.ResponseKind;
+import com.baizley.ifyoulike.model.SearchResult;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -14,8 +19,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -29,21 +36,26 @@ public class CommentService {
         this.httpClient = HttpClient.newHttpClient();
     }
 
-    public JSONArray retrieveTopLevelComments(String blank) {
+    public List<String> retrieveTopLevelComments(String blank) {
         try {
-            JSONArray threads = performSubredditSearch(blank);
+            List<ResponseKind<SearchResult>> searchResults = performSubredditSearch(blank)
+                    .data()
+                    .children();
 
-            JSONArray comments = new JSONArray();
+            List<String> comments = new ArrayList<>();
 
-            for (int threadIndex = 0; threadIndex < threads.length(); threadIndex++) {
-                String id = threads.getJSONObject(threadIndex).getJSONObject("data").getString("id");
-                JSONArray thread = fetchTread(id);
+            for (ResponseKind<SearchResult> searchResult : searchResults) {
+                List<ResponseKind<Listing<Comment>>> thread = fetchTread(searchResult.data().id());
 
-                JSONArray commentThreads = extractCommentThreads(thread);
+                thread.stream()
+                        .flatMap(
+                                kind -> kind.data()
+                                            .children()
+                                            .stream()
+                                            .map(commentKind -> commentKind.data().body())
 
-                for (int commentIndex = 0; commentIndex < commentThreads.length(); commentIndex++) {
-                    comments.put(extractToplevelComment(commentThreads.getJSONObject(commentIndex)));
-                }
+                        )
+                        .forEach(comments::add);
             }
 
             return comments;
@@ -53,44 +65,45 @@ public class CommentService {
         }
     }
 
-    private String extractToplevelComment(JSONObject topLevelComment) {
-        return topLevelComment.getJSONObject("data").getString("body");
+    private List<ResponseKind<Listing<Comment>>> fetchTread(String threadId) throws URISyntaxException, IOException, InterruptedException {
+        String body = httpClient.send(
+                HttpRequest.newBuilder()
+                        .header("Authorization", accessToken.toHeader())
+                        .header("User-Agent", USER_AGENT)
+                        .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/comments/" + threadId))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        ).body();
+
+        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
+        List<ResponseKind<Listing<Comment>>> comments = new Gson().fromJson(body, type);
+
+        return comments.stream()
+                .filter(response -> response.data()
+                                            .children()
+                                            .stream()
+                                            .map(ResponseKind::data)
+                                            .map(Comment::body)
+                                            .anyMatch(Objects::nonNull)
+                )
+                .collect(Collectors.toList());
     }
 
-    private JSONArray extractCommentThreads(JSONArray thread) {
-        return thread.getJSONObject(1).getJSONObject("data").getJSONArray("children");
-    }
-
-    private JSONArray fetchTread(String threadId) throws URISyntaxException, IOException, InterruptedException {
-        return new JSONArray(
-                    // TODO: Check status codes.
-                    httpClient.send(
-                            HttpRequest.newBuilder()
-                                    .header("Authorization", accessToken.toHeader())
-                                    .header("User-Agent", USER_AGENT)
-                                    .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/comments/" + threadId))
-                                    .build(),
-                            HttpResponse.BodyHandlers.ofString()
-                    ).body()
-            );
-    }
-
-    private JSONArray performSubredditSearch(String searchTerm) throws IOException, InterruptedException, URISyntaxException {
+    private ResponseKind<Listing<SearchResult>> performSubredditSearch(String searchTerm) throws IOException, InterruptedException, URISyntaxException {
         String encodedBlank = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString());
 
-        JSONObject body = new JSONObject(
-                // TODO: Check status codes.
-                httpClient.send(
-                        HttpRequest.newBuilder()
-                                .header("Authorization", accessToken.toHeader())
-                                .header("User-Agent", USER_AGENT)
-                                .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q=" + encodedBlank))
-                                .build(),
-                        HttpResponse.BodyHandlers.ofString()
-                ).body()
-        );
+        // TODO: Check status codes.
+        String body = httpClient.send(
+                HttpRequest.newBuilder()
+                        .header("Authorization", accessToken.toHeader())
+                        .header("User-Agent", USER_AGENT)
+                        .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q=" + encodedBlank))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        ).body();
 
+        Type type = new TypeToken<ResponseKind<Listing<SearchResult>>>() {}.getType();
 
-        return body.getJSONObject("data").getJSONArray("children");
+        return new Gson().fromJson(body, type);
     }
 }

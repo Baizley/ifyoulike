@@ -1,15 +1,13 @@
 package com.baizley.ifyoulike.authorization;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public record AccessToken(
-        @JsonProperty("access_token") String accessToken,
-        @JsonProperty("token_type") String tokenType,
-        @JsonProperty("expires_in") int ttl,
-        @JsonProperty("scope") String scope
+        String access_token,
+        String token_type,
+        int ttl,
+        String scope
     ) {
 
     public String toHeader() {
-        return tokenType + " " + accessToken;
+        return token_type + " " + access_token;
     }
 }
