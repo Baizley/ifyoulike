@@ -1,13 +1,13 @@
 package com.baizley.ifyoulike;
 
-import com.baizley.ifyoulike.authorization.Authorization;
+import com.baizley.ifyoulike.reddit.Reddit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class Config {
     @Bean
-    public Authorization authorization() {
-        return new Authorization();
+    public Reddit reddit() {
+        return new Reddit();
     }
 }
