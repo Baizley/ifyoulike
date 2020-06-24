@@ -7,6 +7,8 @@ import com.baizley.ifyoulike.model.ResponseKind;
 import com.baizley.ifyoulike.model.SearchResult;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -34,21 +36,25 @@ public class Reddit {
     private AccessToken accessToken;
 
     public Reddit() {
-        accessToken = fetchAccessToken();
         this.httpClient = HttpClient.newHttpClient();
         this.username = Environment.read("REDDIT_USERNAME");
         this.password = Environment.read("REDDIT_PASSWORD");
+        accessToken = fetchAccessToken();
     }
 
-    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) throws IOException, InterruptedException, URISyntaxException {
-        String encodedBlank = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString());
-
+    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) throws IOException, InterruptedException{
         // TODO: Check status codes.
         String body = httpClient.send(
                 HttpRequest.newBuilder()
                         .header("Authorization", accessToken.toHeader())
                         .header("User-Agent", USER_AGENT)
-                        .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q=" + encodedBlank))
+                        .uri(
+                            UriComponentsBuilder
+                                    .fromHttpUrl("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q={searchTerm}")
+                                    .encode()
+                                    .buildAndExpand(searchTerm)
+                                    .toUri()
+                        )
                         .build(),
                 HttpResponse.BodyHandlers.ofString()
         ).body();
