@@ -36,12 +36,12 @@ public class CommentService {
                 List<ResponseKind<Listing<Comment>>> thread = reddit.fetchCommentTree(searchResult.data().id());
 
                 thread.stream()
-                        .flatMap(
-                                kind -> kind.data()
-                                            .children()
-                                            .stream()
-                                            .map(commentKind -> commentKind.data().body())
-
+                      .flatMap(
+                        kind ->
+                          kind.data()
+                              .children()
+                              .stream()
+                              .map(commentKind -> commentKind.data().body())
                         )
                         .forEach(comments::add);
             }
