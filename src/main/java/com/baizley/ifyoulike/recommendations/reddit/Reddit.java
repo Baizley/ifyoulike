@@ -1,10 +1,11 @@
-package com.baizley.ifyoulike.reddit;
+package com.baizley.ifyoulike.recommendations.reddit;
 
 import com.baizley.ifyoulike.Environment;
 import com.baizley.ifyoulike.model.Comment;
 import com.baizley.ifyoulike.model.Listing;
 import com.baizley.ifyoulike.model.ResponseKind;
 import com.baizley.ifyoulike.model.SearchResult;
+import com.baizley.ifyoulike.recommendations.RecommendationProvider;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Reddit {
+public class Reddit implements RecommendationProvider {
 
     private static final String AUTHORIZATION_HEADER = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
     private static final String USER_AGENT = Environment.read("USER_AGENT");
@@ -39,7 +40,7 @@ public class Reddit {
         accessToken = fetchAccessToken();
     }
 
-    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) throws IOException, InterruptedException{
+    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Authorization", accessToken.toHeader())
                 .header("User-Agent", USER_AGENT)
@@ -52,35 +53,42 @@ public class Reddit {
                 )
                 .build();
 
-        // TODO: Check status codes.
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Type type = new TypeToken<ResponseKind<Listing<SearchResult>>>() {}.getType();
-        return new Gson().fromJson(response.body(), type);
+        try {
+            // TODO: Check status codes.
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            Type type = new TypeToken<ResponseKind<Listing<SearchResult>>>() {}.getType();
+            return new Gson().fromJson(response.body(), type);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public List<ResponseKind<Listing<Comment>>> fetchCommentTree(String articleId) throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .header("Authorization", accessToken.toHeader())
-                .header("User-Agent", USER_AGENT)
-                .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/comments/" + articleId))
-                .build();
+    public List<ResponseKind<Listing<Comment>>> fetchCommentTree(String articleId) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .header("Authorization", accessToken.toHeader())
+                    .header("User-Agent", USER_AGENT)
+                    .uri(new URI("https://oauth.reddit.com/r/ifyoulikeblank/comments/" + articleId))
+                    .build();
 
-        // TODO: Check status codes.
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            // TODO: Check status codes.
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
+            List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(response.body(), type);
 
-        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
-        List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(response.body(), type);
-        return responseKinds.stream()
-                .filter(kind ->
-                        kind.data()
-                            .children()
-                            .stream()
-                            .map(ResponseKind::data)
-                            .map(Comment::body)
-                            .anyMatch(Objects::nonNull)
-                )
-                .collect(Collectors.toList());
+            return responseKinds.stream()
+                    .filter(kind ->
+                            kind.data()
+                                    .children()
+                                    .stream()
+                                    .map(ResponseKind::data)
+                                    .map(Comment::body)
+                                    .anyMatch(Objects::nonNull)
+                    )
+                    .collect(Collectors.toList());
+        } catch (IOException | InterruptedException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public AccessToken fetchAccessToken() {

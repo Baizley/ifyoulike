@@ -1,4 +1,4 @@
-package com.baizley.ifyoulike.reddit;
+package com.baizley.ifyoulike.recommendations.reddit;
 
 public record AccessToken(
         String access_token,
