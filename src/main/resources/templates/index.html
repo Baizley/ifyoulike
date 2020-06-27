@@ -6,26 +6,16 @@
         <link rel="stylesheet" href="/main.css" />
     </head>
     <body>
-    <style>
-      table.center {
-        margin-left:auto;
-        margin-right:auto;
-        width: 25%;
-      }
-    </style>
-
-    <table class="center">
-        <tr>
-            <th>Recommendations from Reddit Comments</th>
-        </tr>
-        <tr th:each="comment : ${comments}" >
-            <td th:text="${comment}"></td>
-        </tr>
-    </table>
-
+    <div class="center">
+        <h1 id="title">Recommendations</h1>
+        <div class="recommendations">
+            <p th:each="comment : ${comments}"
+               th:text="${comment}"
+               class="recommendation">
+            </p>
+        </div>
+    </div>
     <div id="react"></div>
-
     <script src="built/bundle.js"></script>
-
     </body>
 </html>

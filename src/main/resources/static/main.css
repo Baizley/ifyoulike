@@ -1,0 +1,21 @@
+.center {
+    margin-left:auto;
+    margin-right:auto;
+    width: 30%;
+}
+
+#title {
+    text-align: center;
+}
+
+.recommendations {
+    font-size: 14px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    white-space: pre-line;
+}
+
+.recommendation {
+    padding: 12px;
+    border: 2px solid #d6dee0;
+    margin: 0px;
+}
