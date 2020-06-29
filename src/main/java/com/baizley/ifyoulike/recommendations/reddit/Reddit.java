@@ -20,6 +20,7 @@ import java.net.http.HttpResponse;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class Reddit implements RecommendationProvider {
@@ -63,7 +64,7 @@ public class Reddit implements RecommendationProvider {
         }
     }
 
-    public List<ResponseKind<Listing<Comment>>> fetchCommentTree(String articleId) {
+    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", accessToken.toHeader())
@@ -72,21 +73,23 @@ public class Reddit implements RecommendationProvider {
                     .build();
 
             // TODO: Check status codes.
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
-            List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(response.body(), type);
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
+                        List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(response.body(), type);
 
-            return responseKinds.stream()
-                    .filter(kind ->
-                            kind.data()
-                                    .children()
-                                    .stream()
-                                    .map(ResponseKind::data)
-                                    .map(Comment::body)
-                                    .anyMatch(Objects::nonNull)
-                    )
-                    .collect(Collectors.toList());
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+                        return responseKinds.stream()
+                                .filter(kind ->
+                                        kind.data()
+                                                .children()
+                                                .stream()
+                                                .map(ResponseKind::data)
+                                                .map(Comment::body)
+                                                .anyMatch(Objects::nonNull)
+                                )
+                                .collect(Collectors.toList());
+                    });
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }

@@ -6,8 +6,9 @@ import com.baizley.ifyoulike.model.ResponseKind;
 import com.baizley.ifyoulike.model.SearchResult;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface RecommendationProvider {
     ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm);
-    List<ResponseKind<Listing<Comment>>> fetchCommentTree(String articleId);
+    CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId);
 }

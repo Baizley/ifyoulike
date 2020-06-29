@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -29,18 +32,30 @@ public class CommentService {
 
         List<String> comments = new ArrayList<>();
 
-        for (ResponseKind<SearchResult> searchResult : searchResults) {
-            List<ResponseKind<Listing<Comment>>> thread = recommendationProvider.fetchCommentTree(searchResult.data().id());
+        List<CompletableFuture<List<ResponseKind<Listing<Comment>>>>> futures = searchResults.stream()
+                .map(ResponseKind::data)
+                .map(SearchResult::id)
+                .map(recommendationProvider::fetchCommentTree)
+                .collect(Collectors.toList());
 
-            thread.stream()
-                  .flatMap(
-                    kind ->
-                      kind.data()
-                          .children()
-                          .stream()
-                          .map(commentKind -> commentKind.data().body())
-                    )
-                    .forEach(comments::add);
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+
+        for (CompletableFuture<List<ResponseKind<Listing<Comment>>>> future : futures) {
+            try {
+                List<ResponseKind<Listing<Comment>>> thread = future.get();
+
+                List<String> recommendations = thread.stream()
+                        .flatMap(
+                                kind ->
+                                        kind.data()
+                                                .children()
+                                                .stream()
+                                                .map(commentKind -> commentKind.data().body())
+                        ).collect(Collectors.toList());
+
+                comments.addAll(recommendations);
+            } catch (InterruptedException | ExecutionException e) { }
         }
 
         return comments;

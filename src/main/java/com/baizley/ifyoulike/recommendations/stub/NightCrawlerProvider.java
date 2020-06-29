@@ -17,6 +17,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class NightCrawlerProvider implements RecommendationProvider {
@@ -37,13 +38,13 @@ public class NightCrawlerProvider implements RecommendationProvider {
     }
 
     @Override
-    public List<ResponseKind<Listing<Comment>>> fetchCommentTree(String articleId) {
+    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
 
         if ("917p98".equals(articleId)) {
             Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
             try {
                 List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(new JsonReader(new FileReader(threadStub.getFile())), type);
-                return responseKinds.stream()
+                return CompletableFuture.completedFuture(responseKinds.stream()
                         .filter(kind ->
                                 kind.data()
                                         .children()
@@ -52,12 +53,12 @@ public class NightCrawlerProvider implements RecommendationProvider {
                                         .map(Comment::body)
                                         .anyMatch(Objects::nonNull)
                         )
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            return new ArrayList<>();
+            return CompletableFuture.completedFuture(new ArrayList<>());
         }
     }
 }
