@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html xmlns="https://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml">
     <head lang="en">
         <meta charset="UTF-8"/>
-        <title>If You Like &lt;Blank&gt;</title>
+        <title th:text="'If You Like ' + ${blank}">If You Like &ltBlank&gt</title>
         <link rel="stylesheet" href="/main.css" />
     </head>
     <body>
     <div class="center">
-        <h1 id="title">Recommendations</h1>
+        <h1 id="title"  th:text="'If you like ' + ${blank}"></h1>
         <div class="recommendations">
             <p th:each="comment : ${comments}"
                th:text="${comment}"

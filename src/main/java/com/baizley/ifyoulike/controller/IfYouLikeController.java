@@ -30,7 +30,8 @@ public class IfYouLikeController {
     @RequestMapping(value = "/ifyoulike{blank}")
     public String ifYouLikeHtml(@PathVariable String blank, Model model) {
 
-        model.addAttribute("comments", commentService.retrieveTopLevelComments(blank));
+        model.addAttribute("blank", blank);
+        model.addAttribute("comments", recommendationService.retrieveRecommendations(blank));
 
         return "index";
     }
