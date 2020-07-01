@@ -1,4 +1,4 @@
-package com.baizley.ifyoulike.model;
+package com.baizley.ifyoulike.recommendations.reddit.model;
 
 import java.util.List;
 

@@ -1,11 +1,12 @@
 package com.baizley.ifyoulike.recommendations.reddit;
 
 import com.baizley.ifyoulike.Environment;
-import com.baizley.ifyoulike.model.Comment;
-import com.baizley.ifyoulike.model.Listing;
-import com.baizley.ifyoulike.model.ResponseKind;
-import com.baizley.ifyoulike.model.SearchResult;
+import com.baizley.ifyoulike.model.Recommendation;
 import com.baizley.ifyoulike.recommendations.RecommendationProvider;
+import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
+import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
+import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
+import com.baizley.ifyoulike.recommendations.reddit.model.SearchResult;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,6 +35,7 @@ public class Reddit implements RecommendationProvider {
 
     private AccessToken accessToken;
 
+
     public Reddit() {
         this.httpClient = HttpClient.newHttpClient();
         this.username = Environment.read("REDDIT_USERNAME");
@@ -41,7 +43,36 @@ public class Reddit implements RecommendationProvider {
         accessToken = fetchAccessToken();
     }
 
-    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
+    @Override
+    public List<CompletableFuture<List<Recommendation>>> fetchRecommendations(String blank) {
+
+        List<ResponseKind<SearchResult>> searchResults =
+                searchSubreddit(blank)
+                    .data()
+                    .children();
+
+        return searchResults.stream()
+                .map(ResponseKind::data)
+                .map(SearchResult::id)
+                .map(this::fetchCommentTree)
+                .map(future ->
+                        future.thenApply(thread ->
+                                thread.stream()
+                                        .flatMap(
+                                                kind ->
+                                                        kind.data()
+                                                                .children()
+                                                                .stream()
+                                                                .map(commentKind -> commentKind.data().body())
+                                        )
+                                        .map(Recommendation::new)
+                                        .collect(Collectors.toList())
+                        )
+                )
+                .collect(Collectors.toList());
+    }
+
+    private ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Authorization", accessToken.toHeader())
                 .header("User-Agent", USER_AGENT)
@@ -64,7 +95,7 @@ public class Reddit implements RecommendationProvider {
         }
     }
 
-    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
+    private CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", accessToken.toHeader())

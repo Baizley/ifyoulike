@@ -2,7 +2,7 @@ package com.baizley.ifyoulike;
 
 import com.baizley.ifyoulike.recommendations.RecommendationProvider;
 import com.baizley.ifyoulike.recommendations.reddit.Reddit;
-import com.baizley.ifyoulike.recommendations.stub.NightCrawlerProvider;
+import com.baizley.ifyoulike.recommendations.stub.NightCrawlerRecommender;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -19,6 +19,6 @@ public class Config {
     @Profile("development")
     @Bean
     public RecommendationProvider developmentRecommendationProvider() {
-        return new NightCrawlerProvider();
+        return new NightCrawlerRecommender();
     }
 }

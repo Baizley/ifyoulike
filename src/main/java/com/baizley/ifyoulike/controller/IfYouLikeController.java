@@ -1,6 +1,6 @@
 package com.baizley.ifyoulike.controller;
 
-import com.baizley.ifyoulike.service.CommentService;
+import com.baizley.ifyoulike.service.RecommendationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,16 +15,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Controller
 public class IfYouLikeController {
 
-    private final CommentService commentService;
+    private final RecommendationService recommendationService;
 
     @Autowired
-    public IfYouLikeController(CommentService commentService) {
-        this.commentService = commentService;
+    public IfYouLikeController(RecommendationService recommendationService) {
+        this.recommendationService = recommendationService;
     }
 
     @RequestMapping(value = "/ifyoulike{blank}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> ifYouLikeJson(@PathVariable String blank) {
-        return ResponseEntity.ok(commentService.retrieveTopLevelComments(blank));
+        return ResponseEntity.ok(recommendationService.retrieveRecommendations(blank));
     }
 
     @RequestMapping(value = "/ifyoulike{blank}")
