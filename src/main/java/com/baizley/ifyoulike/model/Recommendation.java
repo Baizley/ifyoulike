@@ -1,4 +1,3 @@
 package com.baizley.ifyoulike.model;
 
-public record Recommendation(String text) {
-}
+public record Recommendation(String text) {}

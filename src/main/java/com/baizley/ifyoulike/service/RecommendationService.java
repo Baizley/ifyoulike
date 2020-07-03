@@ -1,7 +1,7 @@
 package com.baizley.ifyoulike.service;
 
 import com.baizley.ifyoulike.model.Recommendation;
-import com.baizley.ifyoulike.recommendations.RecommendationProvider;
+import com.baizley.ifyoulike.recommendations.IfYouLikeRecommender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +14,15 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendationService {
 
-    private final RecommendationProvider recommendationProvider;
+    private final IfYouLikeRecommender ifYouLikeRecommender;
 
     @Autowired
-    public RecommendationService(RecommendationProvider recommendationProvider) {
-        this.recommendationProvider = recommendationProvider;
+    public RecommendationService(IfYouLikeRecommender ifYouLikeRecommender) {
+        this.ifYouLikeRecommender = ifYouLikeRecommender;
     }
 
     public List<String> retrieveRecommendations(String blank) {
-        List<CompletableFuture<List<Recommendation>>> futures = recommendationProvider.fetchRecommendations(blank);
+        List<CompletableFuture<List<Recommendation>>> futures = ifYouLikeRecommender.fetchRecommendations(blank);
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         List<String> recommendations = new ArrayList<>();

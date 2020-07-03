@@ -6,7 +6,6 @@ public record AccessToken(
         int ttl,
         String scope
     ) {
-
     public String toHeader() {
         return token_type + " " + access_token;
     }

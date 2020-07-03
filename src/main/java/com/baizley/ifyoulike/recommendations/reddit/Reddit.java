@@ -1,8 +1,7 @@
 package com.baizley.ifyoulike.recommendations.reddit;
 
 import com.baizley.ifyoulike.Environment;
-import com.baizley.ifyoulike.model.Recommendation;
-import com.baizley.ifyoulike.recommendations.RecommendationProvider;
+import com.baizley.ifyoulike.recommendations.RedditApi;
 import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
@@ -24,7 +23,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class Reddit implements RecommendationProvider {
+public class Reddit implements RedditApi {
 
     private static final String AUTHORIZATION_HEADER = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
     private static final String USER_AGENT = Environment.read("USER_AGENT");
@@ -35,7 +34,6 @@ public class Reddit implements RecommendationProvider {
 
     private AccessToken accessToken;
 
-
     public Reddit() {
         this.httpClient = HttpClient.newHttpClient();
         this.username = Environment.read("REDDIT_USERNAME");
@@ -43,36 +41,7 @@ public class Reddit implements RecommendationProvider {
         accessToken = fetchAccessToken();
     }
 
-    @Override
-    public List<CompletableFuture<List<Recommendation>>> fetchRecommendations(String blank) {
-
-        List<ResponseKind<SearchResult>> searchResults =
-                searchSubreddit(blank)
-                    .data()
-                    .children();
-
-        return searchResults.stream()
-                .map(ResponseKind::data)
-                .map(SearchResult::id)
-                .map(this::fetchCommentTree)
-                .map(future ->
-                        future.thenApply(thread ->
-                                thread.stream()
-                                        .flatMap(
-                                                kind ->
-                                                        kind.data()
-                                                                .children()
-                                                                .stream()
-                                                                .map(commentKind -> commentKind.data().body())
-                                        )
-                                        .map(Recommendation::new)
-                                        .collect(Collectors.toList())
-                        )
-                )
-                .collect(Collectors.toList());
-    }
-
-    private ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
+    public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Authorization", accessToken.toHeader())
                 .header("User-Agent", USER_AGENT)
@@ -95,7 +64,7 @@ public class Reddit implements RecommendationProvider {
         }
     }
 
-    private CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
+    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", accessToken.toHeader())
@@ -107,18 +76,7 @@ public class Reddit implements RecommendationProvider {
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(response -> {
                         Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
-                        List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(response.body(), type);
-
-                        return responseKinds.stream()
-                                .filter(kind ->
-                                        kind.data()
-                                                .children()
-                                                .stream()
-                                                .map(ResponseKind::data)
-                                                .map(Comment::body)
-                                                .anyMatch(Objects::nonNull)
-                                )
-                                .collect(Collectors.toList());
+                        return new Gson().fromJson(response.body(), type);
                     });
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
