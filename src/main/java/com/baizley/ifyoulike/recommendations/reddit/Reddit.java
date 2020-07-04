@@ -38,7 +38,7 @@ public class Reddit implements RedditApi {
         this.httpClient = HttpClient.newHttpClient();
         this.username = Environment.read("REDDIT_USERNAME");
         this.password = Environment.read("REDDIT_PASSWORD");
-        accessToken = fetchAccessToken();
+        this.accessToken = fetchAccessToken();
     }
 
     public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
@@ -84,11 +84,6 @@ public class Reddit implements RedditApi {
     }
 
     public AccessToken fetchAccessToken() {
-        // TODO: Add logic for refreshing access token using refresh token.
-        if (this.accessToken != null) {
-            return this.accessToken;
-        }
-
         try {
             HttpRequest accessTokenRequest = HttpRequest.newBuilder()
                     .header("Accept", "application/json")
@@ -109,9 +104,7 @@ public class Reddit implements RedditApi {
             // TODO: Check status codes.
             HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
 
-            this.accessToken = new Gson().fromJson(response.body(), AccessToken.class);
-
-            return this.accessToken;
+            return new Gson().fromJson(response.body(), AccessToken.class);
         } catch (URISyntaxException | InterruptedException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
