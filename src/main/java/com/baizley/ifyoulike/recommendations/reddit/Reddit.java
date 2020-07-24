@@ -49,6 +49,9 @@ public class Reddit implements RedditApi {
 
         try {
             // TODO: Check status codes.
+            // 500: Report Reddit is down
+            // 401: Report server error based on unauthorized
+            // 403: Report server error based on forbidden
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             Type type = new TypeToken<ResponseKind<Listing<SearchResult>>>() {}.getType();
             return new Gson().fromJson(response.body(), type);
