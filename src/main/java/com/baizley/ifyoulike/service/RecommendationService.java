@@ -22,7 +22,8 @@ public class RecommendationService {
     }
 
     public List<String> retrieveRecommendations(String blank) {
-        List<CompletableFuture<List<Recommendation>>> futures = ifYouLikeRecommender.fetchRecommendations(blank);
+        List<CompletableFuture<List<Recommendation>>> futures =
+                ifYouLikeRecommender.fetchRecommendations(blank);
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         List<String> recommendations = new ArrayList<>();
@@ -35,7 +36,9 @@ public class RecommendationService {
                                 .map(Recommendation::text)
                                 .collect(Collectors.toList())
                 );
-            } catch (InterruptedException | ExecutionException e) { }
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return recommendations;

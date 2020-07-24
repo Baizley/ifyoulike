@@ -3,7 +3,7 @@ package com.baizley.ifyoulike.recommendations.reddit;
 public record AccessToken(
         String access_token,
         String token_type,
-        int ttl,
+        int expires_in,
         String scope
     ) {
     public String toHeader() {

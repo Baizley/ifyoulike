@@ -6,6 +6,7 @@ import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
 import com.baizley.ifyoulike.recommendations.reddit.model.SearchResult;
+import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -19,29 +20,21 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class Reddit implements RedditApi {
 
-    private static final String AUTHORIZATION_HEADER = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
     private static final String USER_AGENT = Environment.read("USER_AGENT");
 
-    private final HttpClient httpClient;
-    private final String username;
-    private final String password;
-
-    private AccessToken accessToken;
-
-    public Reddit() {
-        this.httpClient = HttpClient.newHttpClient();
-        this.username = Environment.read("REDDIT_USERNAME");
-        this.password = Environment.read("REDDIT_PASSWORD");
-        this.accessToken = fetchAccessToken();
-    }
+    private final HttpClient httpClient = HttpClient.newHttpClient();;
+    private final HttpRequest accessTokenRequest = buildAccessTokenRequest();
+    private final Supplier<AccessToken> accessTokenSupplier = buildAccessTokenSupplier();
 
     public ResponseKind<Listing<SearchResult>> searchSubreddit(String searchTerm) {
+        AccessToken accessToken = accessTokenSupplier.get();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .header("Authorization", accessToken.toHeader())
                 .header("User-Agent", USER_AGENT)
@@ -65,6 +58,8 @@ public class Reddit implements RedditApi {
     }
 
     public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
+        AccessToken accessToken = accessTokenSupplier.get();
+
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .header("Authorization", accessToken.toHeader())
@@ -85,30 +80,47 @@ public class Reddit implements RedditApi {
 
     public AccessToken fetchAccessToken() {
         try {
-            HttpRequest accessTokenRequest = HttpRequest.newBuilder()
+            // TODO: Check status codes.
+            HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
+            return new Gson().fromJson(response.body(), AccessToken.class);
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private HttpRequest buildAccessTokenRequest() {
+
+        String basicAuthorization = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
+        String username = Environment.read("REDDIT_USERNAME");
+        String password = Environment.read("REDDIT_PASSWORD");
+
+        try {
+            return HttpRequest.newBuilder()
                     .header("Accept", "application/json")
-                    .header("Authorization", "Basic " + AUTHORIZATION_HEADER)
+                    .header("Authorization", "Basic " + basicAuthorization)
                     .header("User-Agent", USER_AGENT)
                     .uri(new URI("https://www.reddit.com/api/v1/access_token"))
                     .POST(
                         HttpRequest
-                            .BodyPublishers
-                            .ofString(
-                            "grant_type=password" +
-                                  "&username=" + username +
-                                  "&password=" + password
-                            )
+                                .BodyPublishers
+                                .ofString(
+                                "grant_type=password" +
+                                        "&username=" + username +
+                                        "&password=" + password
+                                )
                     )
                     .build();
-
-            // TODO: Check status codes.
-            HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
-
-            return new Gson().fromJson(response.body(), AccessToken.class);
-        } catch (URISyntaxException | InterruptedException | IOException e) {
-            e.printStackTrace();
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Supplier<AccessToken> buildAccessTokenSupplier() {
+        return Suppliers.memoizeWithExpiration(
+                this::fetchAccessToken,
+                58,
+                TimeUnit.MINUTES
+        );
     }
 
     private static String base64Encode(String content) {
