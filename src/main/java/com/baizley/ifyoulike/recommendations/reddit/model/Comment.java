@@ -1,3 +1,3 @@
 package com.baizley.ifyoulike.recommendations.reddit.model;
 
-public record Comment(String body) {}
+public record Comment(String body, int score) {}

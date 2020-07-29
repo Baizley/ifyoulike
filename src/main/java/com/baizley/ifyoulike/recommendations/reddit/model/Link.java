@@ -1,3 +1,3 @@
 package com.baizley.ifyoulike.recommendations.reddit.model;
 
-public record SearchResult(String id) {}
+public record Link(String id, int score) {}
