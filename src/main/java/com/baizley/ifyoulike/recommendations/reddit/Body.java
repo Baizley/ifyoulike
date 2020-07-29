@@ -10,18 +10,18 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class GsonTypes {
+public class Body {
     private static final Type link = new TypeToken<ResponseKind<Listing<Link>>>() {
     }.getType();
-    public static final Type comment = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {
+    private static final Type comment = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {
     }.getType();
 
     public static ResponseKind<Listing<Link>> toLink(String body) {
-        return new Gson().fromJson(body, GsonTypes.link);
+        return new Gson().fromJson(body, Body.link);
     }
 
     public static List<ResponseKind<Listing<Comment>>> toComment(String body) {
-        return new Gson().fromJson(body, GsonTypes.comment);
+        return new Gson().fromJson(body, Body.comment);
     }
 
     public static AccessToken toAccessToken(String body) {

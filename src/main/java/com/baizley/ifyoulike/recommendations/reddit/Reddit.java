@@ -55,7 +55,7 @@ public class Reddit implements RedditApi {
             // 401: Report server error based on unauthorized
             // 403: Report server error based on forbidden
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return GsonTypes.toLink(response.body());
+            return Body.toLink(response.body());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -74,7 +74,7 @@ public class Reddit implements RedditApi {
             // TODO: Check status codes.
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(HttpResponse::body)
-                    .thenApply(GsonTypes::toComment);
+                    .thenApply(Body::toComment);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -84,7 +84,7 @@ public class Reddit implements RedditApi {
         try {
             // TODO: Check status codes.
             HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
-            return GsonTypes.toAccessToken(response.body());
+            return Body.toAccessToken(response.body());
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
