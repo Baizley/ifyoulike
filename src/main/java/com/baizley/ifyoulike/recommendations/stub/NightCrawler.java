@@ -2,9 +2,9 @@ package com.baizley.ifyoulike.recommendations.stub;
 
 import com.baizley.ifyoulike.recommendations.RedditApi;
 import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
+import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
-import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -30,7 +30,8 @@ public class NightCrawler implements RedditApi {
             return new ResponseKind<>(new Listing<>(new ArrayList<>()));
         }
 
-        Type type = new TypeToken<ResponseKind<Listing<Link>>>() {}.getType();
+        Type type = new TypeToken<ResponseKind<Listing<Link>>>() {
+        }.getType();
         try {
             return new Gson().fromJson(new JsonReader(new FileReader(searchStub.getFile())), type);
         } catch (IOException e) {
@@ -39,16 +40,17 @@ public class NightCrawler implements RedditApi {
     }
 
     public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
-        if ("917p98".equals(articleId)) {
-            Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
-            try {
-                List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(new JsonReader(new FileReader(threadStub.getFile())), type);
-                return CompletableFuture.completedFuture(responseKinds);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+        if (!"917p98".equals(articleId)) {
             return CompletableFuture.completedFuture(new ArrayList<>());
+        }
+
+        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {
+        }.getType();
+        try {
+            List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(new JsonReader(new FileReader(threadStub.getFile())), type);
+            return CompletableFuture.completedFuture(responseKinds);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

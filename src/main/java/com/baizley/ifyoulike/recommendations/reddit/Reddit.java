@@ -29,7 +29,7 @@ public class Reddit implements RedditApi {
     private static final String USER_AGENT = Environment.read("USER_AGENT");
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    ;
+
     private final HttpRequest accessTokenRequest = buildAccessTokenRequest();
     private final Supplier<AccessToken> accessTokenSupplier = buildAccessTokenSupplier();
 
