@@ -56,8 +56,6 @@ public class IfYouLikeController {
         return emitter;
     }
 
-
-
     @RequestMapping(value = "/ifyoulike{blank}", produces = TEXT_HTML_VALUE)
     public String ifYouLikeHtml() {
         return "forward:/ifyoulike/index.html";

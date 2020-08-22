@@ -19,15 +19,10 @@ class IfYouLike extends React.Component {
     }
 
     componentDidMount() {
-        fetch(`/ifyoulike${this.state.blank}`, {
-            headers: {
-                'Pragma': 'no-cache',
-                'Cache-Control': 'no-cache',
-                'Accept': 'application/json'
-            }
-        })
-        .then((response) => response.json())
-        .then((recommendations) => this.setState({recommendations: recommendations}));
+        new EventSource(`/ifyoulike${this.state.blank}`).addEventListener(
+            "recommendation",
+            (event) => this.setState({recommendations: [...this.state.recommendations, JSON.parse(event.data)]})
+        );
     }
 
     render() {
