@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,13 +35,11 @@ public class IfYouLikeController {
 
     @RequestMapping(value = "/ifyoulike{blank}")
     public SseEmitter ifYouLikeServerSentEvents(@PathVariable String blank) {
+        List<CompletableFuture<List<Recommendation>>> futures = recommendationService.retrieveRecommendationsAsync(blank);
+
         SseEmitter emitter = new SseEmitter();
 
-        List<Recommendation> recommendations = recommendationService.retrieveRecommendations(blank);
-
-        ExecutorService service = Executors.newSingleThreadExecutor();
-
-        service.submit(() -> {
+        futures.forEach(future -> future.thenAccept(recommendations -> {
             for (Recommendation recommendation : recommendations) {
                 SseEmitter.SseEventBuilder name = SseEmitter.event()
                         .data(recommendation)
@@ -51,7 +50,7 @@ public class IfYouLikeController {
                     e.printStackTrace();
                 }
             }
-        });
+        }));
 
         return emitter;
     }

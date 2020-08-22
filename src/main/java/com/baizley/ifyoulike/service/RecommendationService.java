@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
@@ -19,6 +18,10 @@ public class RecommendationService {
     @Autowired
     public RecommendationService(IfYouLikeRecommender ifYouLikeRecommender) {
         this.ifYouLikeRecommender = ifYouLikeRecommender;
+    }
+
+    public List<CompletableFuture<List<Recommendation>>> retrieveRecommendationsAsync(String blank) {
+        return ifYouLikeRecommender.fetchRecommendations(blank);
     }
 
     public List<Recommendation> retrieveRecommendations(String blank) {
