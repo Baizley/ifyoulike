@@ -1,5 +1,6 @@
 import React from 'react';
 import './IfYouLike.css';
+import Recommendation from "./components/Recommendation";
 
 class IfYouLike extends React.Component {
 
@@ -34,7 +35,7 @@ class IfYouLike extends React.Component {
             <div class="center">
                 <h1 id="title">If You Like {this.capitalizeFirstLetter(this.state.blank)}</h1>
                 <div class="recommendations">
-                    {this.state.recommendations.map((recommendation) => <p class="recommendation">{recommendation}</p>)}
+                    {this.state.recommendations.map((recommendation) => <Recommendation recommendation={recommendation}/>)}
                 </div>
             </div>
         );

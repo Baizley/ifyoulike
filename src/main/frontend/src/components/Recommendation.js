@@ -1,8 +1,9 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 
-function Recommendation() {
+function Recommendation(props) {
     return (
-        <p class="recommendation"></p>
+        <p class="recommendation"><ReactMarkdown source={props.recommendation}/></p>
     );
 }
 
