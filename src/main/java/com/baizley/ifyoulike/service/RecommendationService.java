@@ -21,21 +21,16 @@ public class RecommendationService {
         this.ifYouLikeRecommender = ifYouLikeRecommender;
     }
 
-    public List<String> retrieveRecommendations(String blank) {
+    public List<Recommendation> retrieveRecommendations(String blank) {
         List<CompletableFuture<List<Recommendation>>> futures =
                 ifYouLikeRecommender.fetchRecommendations(blank);
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        List<String> recommendations = new ArrayList<>();
+        List<Recommendation> recommendations = new ArrayList<>();
 
         for (CompletableFuture<List<Recommendation>> future : futures) {
             try {
-                recommendations.addAll(
-                        future.get()
-                                .stream()
-                                .map(Recommendation::text)
-                                .collect(Collectors.toList())
-                );
+                recommendations.addAll(future.get());
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }

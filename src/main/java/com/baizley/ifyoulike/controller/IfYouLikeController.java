@@ -1,5 +1,6 @@
 package com.baizley.ifyoulike.controller;
 
+import com.baizley.ifyoulike.model.Recommendation;
 import com.baizley.ifyoulike.service.RecommendationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class IfYouLikeController {
     }
 
     @RequestMapping(value = "/ifyoulike{blank}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> ifYouLikeJson(@PathVariable String blank) {
+    public ResponseEntity<List<Recommendation>> ifYouLikeJson(@PathVariable String blank) {
         return ResponseEntity.ok(recommendationService.retrieveRecommendations(blank));
     }
 
@@ -35,12 +36,12 @@ public class IfYouLikeController {
     public SseEmitter ifYouLikeServerSentEvents(@PathVariable String blank) {
         SseEmitter emitter = new SseEmitter();
 
-        List<String> recommendations = recommendationService.retrieveRecommendations(blank);
+        List<Recommendation> recommendations = recommendationService.retrieveRecommendations(blank);
 
         ExecutorService service = Executors.newSingleThreadExecutor();
 
         service.submit(() -> {
-            for (String recommendation : recommendations) {
+            for (Recommendation recommendation : recommendations) {
                 SseEmitter.SseEventBuilder name = SseEmitter.event()
                         .data(recommendation)
                         .name("recommendation");
