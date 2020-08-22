@@ -43,17 +43,19 @@ public class IfYouLikeRecommender {
 
     private List<Recommendation> extractComments(List<ResponseKind<Listing<Comment>>> thread) {
         return thread.stream()
-                .filter(kind ->
-                        kind.data()
-                                .children()
-                                .stream()
-                                .map(ResponseKind::data)
-                                .map(Comment::body)
-                                .anyMatch(Objects::nonNull)
-                )
+                .filter(this::isComment)
                 .flatMap(this::extractCommentBody)
                 .map(Recommendation::new)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isComment(ResponseKind<Listing<Comment>> kind) {
+        return kind.data()
+                .children()
+                .stream()
+                .map(ResponseKind::data)
+                .map(Comment::body)
+                .anyMatch(Objects::nonNull);
     }
 
     private Stream<String> extractCommentBody(ResponseKind<Listing<Comment>> kind) {

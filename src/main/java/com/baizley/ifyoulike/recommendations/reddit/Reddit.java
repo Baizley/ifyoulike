@@ -7,7 +7,6 @@ import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
 import com.google.common.base.Suppliers;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -27,10 +26,10 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 public class Reddit implements RedditApi {
 
-    private Body body;
+    private final Converter converter;
 
-    public Reddit(Body body) {
-        this.body = body;
+    public Reddit(Converter converter) {
+        this.converter = converter;
     }
 
     private static final String USER_AGENT = Environment.read("USER_AGENT");
@@ -62,7 +61,7 @@ public class Reddit implements RedditApi {
             // 401: Report server error based on unauthorized
             // 403: Report server error based on forbidden
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return body.toLink(response.body());
+            return converter.toLink(response.body());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +80,7 @@ public class Reddit implements RedditApi {
             // TODO: Check status codes.
             return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(HttpResponse::body)
-                    .thenApply(body::toComment);
+                    .thenApply(converter::toComment);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -91,7 +90,7 @@ public class Reddit implements RedditApi {
         try {
             // TODO: Check status codes.
             HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
-            return body.toAccessToken(response.body());
+            return converter.toAccessToken(response.body());
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }

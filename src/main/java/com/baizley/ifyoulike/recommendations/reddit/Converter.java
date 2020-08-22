@@ -6,23 +6,20 @@ import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class Body {
+public class Converter {
 
-    private Gson gson;
+    private final Gson gson;
 
-    public Body(Gson gson) {
+    public Converter(Gson gson) {
         this.gson = gson;
     }
 
-    private final Type link = new TypeToken<ResponseKind<Listing<Link>>>() {
-    }.getType();
-    private final Type comment = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {
-    }.getType();
+    private final Type link = new TypeToken<ResponseKind<Listing<Link>>>() {}.getType();
+    private final Type comment = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {}.getType();
 
     public ResponseKind<Listing<Link>> toLink(String body) {
         return gson.fromJson(body, this.link);

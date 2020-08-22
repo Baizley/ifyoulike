@@ -1,7 +1,7 @@
 package com.baizley.ifyoulike;
 
 import com.baizley.ifyoulike.recommendations.RedditApi;
-import com.baizley.ifyoulike.recommendations.reddit.Body;
+import com.baizley.ifyoulike.recommendations.reddit.Converter;
 import com.baizley.ifyoulike.recommendations.reddit.Reddit;
 import com.baizley.ifyoulike.recommendations.stub.NightCrawler;
 import com.google.gson.Gson;
@@ -19,7 +19,7 @@ public class Config {
     @Profile("production")
     @Bean
     public RedditApi productionRedditApi() {
-        return new Reddit(new Body(gson));
+        return new Reddit(new Converter(gson));
     }
 
     @Profile("development")
