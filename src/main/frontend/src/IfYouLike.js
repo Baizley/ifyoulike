@@ -23,7 +23,13 @@ class IfYouLike extends React.Component {
         const eventSource = new EventSource(`/ifyoulike${this.state.blank}`);
         eventSource.addEventListener(
             "recommendation",
-            (event) => this.setState({recommendations: [...this.state.recommendations, JSON.parse(event.data)]})
+            (event) => {
+                setTimeout(
+                    () => this.setState({recommendations: [...this.state.recommendations, JSON.parse(event.data)]}),
+                    this.state.recommendations.length
+                )
+
+            }
         );
         eventSource.addEventListener(
             "COMPLETE",
@@ -36,7 +42,7 @@ class IfYouLike extends React.Component {
             <div class="center">
                 <h1 id="title">If You Like {this.capitalizeFirstLetter(this.state.blank)}</h1>
                 <div class="recommendations">
-                    {this.state.recommendations.map((recommendation) => <Recommendation recommendation={recommendation}/>)}
+                    {this.state.recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation}/>)}
                 </div>
             </div>
         );
