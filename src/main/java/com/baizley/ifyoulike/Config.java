@@ -16,6 +16,10 @@ public class Config {
     @Autowired
     private Gson gson;
 
+    public Config(Gson gson) {
+        this.gson = gson;
+    }
+
     @Profile("production")
     @Bean
     public RedditApi productionRedditApi() {

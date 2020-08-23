@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -22,6 +23,7 @@ import static org.springframework.http.MediaType.TEXT_HTML_VALUE;
 public class IfYouLikeController {
 
     private final RecommendationService recommendationService;
+    private final long sseTimeout = Duration.ofMinutes(1).toMillis();
 
     @Autowired
     public IfYouLikeController(RecommendationService recommendationService) {
@@ -37,20 +39,32 @@ public class IfYouLikeController {
     public SseEmitter ifYouLikeServerSentEvents(@PathVariable String blank) {
         List<CompletableFuture<List<Recommendation>>> futures = recommendationService.retrieveRecommendationsAsync(blank);
 
-        SseEmitter emitter = new SseEmitter();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        futures.forEach(future -> future.thenAccept(recommendations -> {
-            for (Recommendation recommendation : recommendations) {
-                SseEmitter.SseEventBuilder name = SseEmitter.event()
-                        .data(recommendation)
-                        .name("recommendation");
-                try {
-                    emitter.send(name);
-                } catch (IOException e) {
-                    e.printStackTrace();
+        SseEmitter emitter = new SseEmitter(sseTimeout);
+
+        executor.submit(() -> {
+            futures.forEach(future -> future.thenAccept(recommendations -> {
+                for (Recommendation recommendation : recommendations) {
+                    SseEmitter.SseEventBuilder name = SseEmitter.event()
+                            .data(recommendation)
+                            .name("recommendation");
+                    try {
+                        emitter.send(name);
+                    } catch (IOException exception) {
+                        throw new RuntimeException("Failed to sent recommendation event.", exception);
+                    }
                 }
+            }));
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            try {
+                emitter.send(SseEmitter.event().name("COMPLETE").data("COMPLETE"));
+            } catch (IOException exception) {
+                throw new RuntimeException("Failed to send completion event.", exception);
             }
-        }));
+        });
 
         return emitter;
     }

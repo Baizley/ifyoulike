@@ -19,10 +19,16 @@ class IfYouLike extends React.Component {
     }
 
     componentDidMount() {
-        new EventSource(`/ifyoulike${this.state.blank}`).addEventListener(
+        document.title = "If You Like " + this.capitalizeFirstLetter(this.state.blank);
+        const eventSource = new EventSource(`/ifyoulike${this.state.blank}`);
+        eventSource.addEventListener(
             "recommendation",
             (event) => this.setState({recommendations: [...this.state.recommendations, JSON.parse(event.data)]})
         );
+        eventSource.addEventListener(
+            "COMPLETE",
+            (event) => eventSource.close()
+        )
     }
 
     render() {
