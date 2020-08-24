@@ -14,12 +14,12 @@ class IfYouLike extends React.Component {
         return pathName.replace('/ifyoulike', '').replace('/index.html', '');
     }
 
-    capitalizeFirstLetter(word) {
-        return word.charAt(0).toUpperCase() + word.substring(1);
+    capitalizeFirstLetters(words) {
+        return words.split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
     }
 
     componentDidMount() {
-        document.title = "If You Like " + this.capitalizeFirstLetter(this.state.blank);
+        document.title = "If You Like " + this.capitalizeFirstLetters(decodeURIComponent(this.state.blank));
         const eventSource = new EventSource(`/ifyoulike${this.state.blank}`);
         eventSource.addEventListener(
             "recommendation",
@@ -40,7 +40,7 @@ class IfYouLike extends React.Component {
     render() {
         return (
             <div class="center">
-                <h1 id="title">If You Like {this.capitalizeFirstLetter(this.state.blank)}</h1>
+                <div id="title">If you like <div id="blank">{this.capitalizeFirstLetters(decodeURIComponent(this.state.blank))}</div> then you might like</div>
                 <div class="recommendations">
                     {this.state.recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation}/>)}
                 </div>

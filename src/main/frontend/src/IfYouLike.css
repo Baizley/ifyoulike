@@ -5,7 +5,16 @@
 }
 
 #title {
+  font-family: "Berkshire Swash", verdana, arial, helvetica, sans-serif;
+  font-size: 32px;
   text-align: center;
+  margin: 20px;
+}
+
+#blank {
+  font-family: "Courgette", "Berkshire Swash", verdana, arial, helvetica, sans-serif;
+  font-size: 32px;
+  margin-top: 10px;
 }
 
 .recommendations {
