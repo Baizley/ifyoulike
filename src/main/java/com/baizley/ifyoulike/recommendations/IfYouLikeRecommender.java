@@ -8,6 +8,8 @@ import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -44,8 +46,14 @@ public class IfYouLikeRecommender {
     private List<Recommendation> extractComments(List<ResponseKind<Listing<Comment>>> thread) {
         return thread.stream()
                 .filter(this::isComment)
-                .flatMap(this::extractCommentBody)
-                .map(Recommendation::new)
+                .flatMap(this::extractComment)
+                .map(comment -> {
+                    try {
+                        return new Recommendation(comment.body(), new URL("https://reddit.com" + comment.permalink()));
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
@@ -58,13 +66,11 @@ public class IfYouLikeRecommender {
                 .anyMatch(Objects::nonNull);
     }
 
-    private Stream<String> extractCommentBody(ResponseKind<Listing<Comment>> kind) {
+    private Stream<Comment> extractComment(ResponseKind<Listing<Comment>> kind) {
         return kind.data()
                 .children()
                 .stream()
-                .map(ResponseKind::data)
-                .sorted(Comparator.comparingInt(Comment::score))
-                .map(Comment::body);
+                .map(ResponseKind::data);
     }
 }
 

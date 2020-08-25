@@ -3,7 +3,10 @@ import ReactMarkdown from "react-markdown";
 
 function Recommendation(props) {
     return (
-        <p className="recommendation"><ReactMarkdown source={props.recommendation.text}/></p>
+        <p className="recommendation">
+            <a href={props.recommendation.source}><i class="material-icons source">link</i></a>
+            <ReactMarkdown source={props.recommendation.text}/>
+        </p>
     );
 }
 

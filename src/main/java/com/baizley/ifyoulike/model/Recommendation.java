@@ -1,3 +1,5 @@
 package com.baizley.ifyoulike.model;
 
-public record Recommendation(String text) {}
+import java.net.URL;
+
+public record Recommendation(String text, URL source) {}
