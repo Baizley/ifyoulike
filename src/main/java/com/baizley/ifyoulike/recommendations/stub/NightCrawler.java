@@ -1,6 +1,6 @@
 package com.baizley.ifyoulike.recommendations.stub;
 
-import com.baizley.ifyoulike.recommendations.RedditApi;
+import com.baizley.ifyoulike.recommendations.reddit.RedditApi;
 import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;

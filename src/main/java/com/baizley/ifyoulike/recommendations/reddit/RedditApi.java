@@ -1,4 +1,4 @@
-package com.baizley.ifyoulike.recommendations;
+package com.baizley.ifyoulike.recommendations.reddit;
 
 import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;

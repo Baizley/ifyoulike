@@ -1,6 +1,7 @@
 package com.baizley.ifyoulike.recommendations;
 
 import com.baizley.ifyoulike.model.Recommendation;
+import com.baizley.ifyoulike.recommendations.reddit.RedditApi;
 import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -36,24 +36,26 @@ public class IfYouLikeRecommender {
         
         return searchResults.stream()
                 .map(ResponseKind::data)
-                .sorted(Comparator.comparingInt(Link::score))
-                .map(Link::id)
-                .map(redditApi::fetchCommentTree)
-                .map(future -> future.thenApply(this::extractComments))
+                .map(link -> redditApi.fetchCommentTree(link.id())
+                        .thenApply(this::extractComments)
+                        .thenApply(comments ->
+                                comments.stream()
+                                        .map(comment -> {
+                                            try {
+                                                return new Recommendation(comment.body(), new URL("http://reddit.com" + comment.permalink()), link.score() + comment.score());
+                                            } catch (MalformedURLException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        })
+                                        .collect(Collectors.toList())
+                        ))
                 .collect(Collectors.toList());
     }
 
-    private List<Recommendation> extractComments(List<ResponseKind<Listing<Comment>>> thread) {
+    private List<Comment> extractComments(List<ResponseKind<Listing<Comment>>> thread) {
         return thread.stream()
                 .filter(this::isComment)
                 .flatMap(this::extractComment)
-                .map(comment -> {
-                    try {
-                        return new Recommendation(comment.body(), new URL("https://reddit.com" + comment.permalink()));
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
                 .collect(Collectors.toList());
     }
 

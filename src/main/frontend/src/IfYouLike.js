@@ -18,6 +18,10 @@ class IfYouLike extends React.Component {
         return words.split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
     }
 
+    sortRecommendations(recommendations) {
+        return recommendations.sort((r1, r2) => r2.score - r1.score);
+    }
+
     componentDidMount() {
         document.title = "If You Like " + this.capitalizeFirstLetters(decodeURIComponent(this.state.blank));
         const eventSource = new EventSource(`/ifyoulike${this.state.blank}`);
@@ -25,7 +29,7 @@ class IfYouLike extends React.Component {
             "recommendation",
             (event) => {
                 setTimeout(
-                    () => this.setState({recommendations: [...this.state.recommendations, JSON.parse(event.data)]}),
+                    () => this.setState({recommendations: this.sortRecommendations([...this.state.recommendations, JSON.parse(event.data)])}),
                     this.state.recommendations.length
                 )
 

@@ -61,6 +61,7 @@ public class IfYouLikeController {
 
             try {
                 emitter.send(SseEmitter.event().name("COMPLETE").data("COMPLETE"));
+                emitter.complete();
             } catch (IOException exception) {
                 throw new RuntimeException("Failed to send completion event.", exception);
             }

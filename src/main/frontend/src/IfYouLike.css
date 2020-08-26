@@ -11,6 +11,12 @@
   margin: 20px;
 }
 
+.score {
+   position: absolute;
+   top: 0px;
+   left: 0px;
+}
+
 .source {
   position: absolute;
   top: 0px;

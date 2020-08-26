@@ -1,6 +1,6 @@
 package com.baizley.ifyoulike;
 
-import com.baizley.ifyoulike.recommendations.RedditApi;
+import com.baizley.ifyoulike.recommendations.reddit.RedditApi;
 import com.baizley.ifyoulike.recommendations.reddit.Converter;
 import com.baizley.ifyoulike.recommendations.reddit.Reddit;
 import com.baizley.ifyoulike.recommendations.stub.NightCrawler;
