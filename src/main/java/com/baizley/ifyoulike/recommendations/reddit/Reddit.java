@@ -41,16 +41,15 @@ public class Reddit implements RedditApi {
     public ResponseKind<Listing<Link>> searchSubreddit(String searchTerm) {
         AccessToken accessToken = accessTokenSupplier.get();
 
-
         HttpRequest request = HttpRequest.newBuilder()
                 .header(AUTHORIZATION, accessToken.toHeader())
                 .header(HttpHeaders.USER_AGENT, USER_AGENT)
                 .uri(
-                        UriComponentsBuilder
-                                .fromHttpUrl("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q={searchTerm}")
-                                .encode()
-                                .buildAndExpand(searchTerm)
-                                .toUri()
+                    UriComponentsBuilder
+                        .fromHttpUrl("https://oauth.reddit.com/r/ifyoulikeblank/search.json?restrict_sr=true&q={searchTerm}")
+                        .encode()
+                        .buildAndExpand(searchTerm)
+                        .toUri()
                 )
                 .build();
 
@@ -108,13 +107,13 @@ public class Reddit implements RedditApi {
                     .header("User-Agent", USER_AGENT)
                     .uri(new URI("https://www.reddit.com/api/v1/access_token"))
                     .POST(
-                            HttpRequest
-                                    .BodyPublishers
-                                    .ofString(
-                                            "grant_type=password" +
-                                                    "&username=" + username +
-                                                    "&password=" + password
-                                    )
+                        HttpRequest
+                            .BodyPublishers
+                            .ofString(
+                        "grant_type=password" +
+                                "&username=" + username +
+                                "&password=" + password
+                            )
                     )
                     .build();
         } catch (URISyntaxException e) {
@@ -131,9 +130,6 @@ public class Reddit implements RedditApi {
     }
 
     private static String base64Encode(String content) {
-        return new String(
-                Base64.getEncoder()
-                      .encode(content.getBytes())
-        );
+        return Base64.getEncoder().encodeToString(content.getBytes());
     }
 }
