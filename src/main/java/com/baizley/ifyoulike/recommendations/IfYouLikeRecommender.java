@@ -6,6 +6,8 @@ import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,7 @@ import java.util.stream.Stream;
 @Component
 public class IfYouLikeRecommender {
 
+    private Logger logger = LoggerFactory.getLogger(IfYouLikeRecommender.class);
     private final RedditApi redditApi;
 
     @Autowired
@@ -29,27 +32,40 @@ public class IfYouLikeRecommender {
 
     public List<CompletableFuture<List<Recommendation>>> fetchRecommendations(String blank) {
 
-        List<ResponseKind<Link>> searchResults =
-                redditApi.searchSubreddit(blank)
-                        .data()
-                        .children();
+        List<Link> searchResults = performSearch(blank);
         
         return searchResults.stream()
-                .map(ResponseKind::data)
-                .map(link -> redditApi.fetchCommentTree(link.id())
-                        .thenApply(this::extractComments)
-                        .thenApply(comments ->
-                                comments.stream()
-                                        .map(comment -> {
-                                            try {
-                                                return new Recommendation(comment.body(), new URL("http://reddit.com" + comment.permalink()), link.score() + comment.score());
-                                            } catch (MalformedURLException e) {
-                                                throw new RuntimeException(e);
-                                            }
-                                        })
-                                        .collect(Collectors.toList())
-                        ))
+                .map(this::toRecommendation)
                 .collect(Collectors.toList());
+    }
+
+    private List<Link> performSearch(String blank) {
+        return redditApi.searchSubreddit(blank)
+                .data()
+                .children()
+                .stream()
+                .map(ResponseKind::data)
+                .collect(Collectors.toList());
+    }
+
+    private CompletableFuture<List<Recommendation>> toRecommendation(Link link) {
+        return redditApi.fetchCommentTree(link.id())
+                .thenApply(this::extractComments)
+                .thenApply(comments -> constructRecommendations(link, comments));
+    }
+
+    private List<Recommendation> constructRecommendations(Link threadlink, List<Comment> comments) {
+        return comments.stream()
+                .map(comment -> constructRecommendation(threadlink, comment))
+                .collect(Collectors.toList());
+    }
+
+    private Recommendation constructRecommendation(Link threadlink, Comment comment) {
+        try {
+            return new Recommendation(comment.body(), new URL("http://reddit.com" + comment.permalink()), threadlink.score() + comment.score());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<Comment> extractComments(List<ResponseKind<Listing<Comment>>> thread) {

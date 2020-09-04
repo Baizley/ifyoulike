@@ -133,7 +133,7 @@ public class Reddit implements RedditApi {
     private static String base64Encode(String content) {
         return new String(
                 Base64.getEncoder()
-                        .encode(content.getBytes())
+                      .encode(content.getBytes())
         );
     }
 }
