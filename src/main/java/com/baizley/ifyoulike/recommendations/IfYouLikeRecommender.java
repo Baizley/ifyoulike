@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 @Component
 public class IfYouLikeRecommender {
 
-    private Logger logger = LoggerFactory.getLogger(IfYouLikeRecommender.class);
+    private final Logger logger = LoggerFactory.getLogger(IfYouLikeRecommender.class);
     private final RedditApi redditApi;
 
     @Autowired
@@ -56,14 +57,16 @@ public class IfYouLikeRecommender {
     private List<Recommendation> constructRecommendations(Link threadlink, List<Comment> comments) {
         return comments.stream()
                 .map(comment -> constructRecommendation(threadlink, comment))
+                .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 
-    private Recommendation constructRecommendation(Link threadlink, Comment comment) {
+    private Optional<Recommendation> constructRecommendation(Link threadlink, Comment comment) {
         try {
-            return new Recommendation(comment.body(), new URL("http://reddit.com" + comment.permalink()), threadlink.score() + comment.score());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            return Optional.of(new Recommendation(comment.body(), new URL("http://reddit.com" + comment.permalink()), threadlink.score() + comment.score()));
+        } catch (MalformedURLException exception) {
+            logger.error("Failed to create source URL for recommendation.", exception);
+            return Optional.empty();
         }
     }
 
