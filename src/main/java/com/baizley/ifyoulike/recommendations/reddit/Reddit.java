@@ -5,7 +5,6 @@ import com.baizley.ifyoulike.recommendations.reddit.model.Comment;
 import com.baizley.ifyoulike.recommendations.reddit.model.Link;
 import com.baizley.ifyoulike.recommendations.reddit.model.Listing;
 import com.baizley.ifyoulike.recommendations.reddit.model.ResponseKind;
-import com.google.common.base.Suppliers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -15,10 +14,8 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -26,20 +23,19 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class Reddit implements RedditApi {
 
     private final Converter converter;
+    private final RedditAuthenticator authenticator;
 
-    public Reddit(Converter converter) {
+    public Reddit(Converter converter, RedditAuthenticator authenticator) {
         this.converter = converter;
+        this.authenticator = authenticator;
     }
 
     private static final String USER_AGENT = Environment.read("USER_AGENT");
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    private final HttpRequest accessTokenRequest = buildAccessTokenRequest();
-    private final Supplier<AccessToken> accessTokenSupplier = buildAccessTokenSupplier();
-
     public ResponseKind<Listing<Link>> searchSubreddit(String searchTerm) {
-        AccessToken accessToken = accessTokenSupplier.get();
+        AccessToken accessToken = authenticator.getAccessToken();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .header(AUTHORIZATION, accessToken.toHeader())
@@ -66,7 +62,7 @@ public class Reddit implements RedditApi {
     }
 
     public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
-        AccessToken accessToken = accessTokenSupplier.get();
+        AccessToken accessToken = authenticator.getAccessToken();
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -82,54 +78,5 @@ public class Reddit implements RedditApi {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public AccessToken fetchAccessToken() {
-        try {
-            // TODO: Check status codes.
-            HttpResponse<String> response = httpClient.send(accessTokenRequest, HttpResponse.BodyHandlers.ofString());
-            return converter.toAccessToken(response.body());
-        } catch (InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private HttpRequest buildAccessTokenRequest() {
-
-        String basicAuthorization = base64Encode(Environment.read("BASIC_AUTHORIZATION"));
-        String username = Environment.read("REDDIT_USERNAME");
-        String password = Environment.read("REDDIT_PASSWORD");
-
-        try {
-            return HttpRequest.newBuilder()
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Basic " + basicAuthorization)
-                    .header("User-Agent", USER_AGENT)
-                    .uri(new URI("https://www.reddit.com/api/v1/access_token"))
-                    .POST(
-                        HttpRequest
-                            .BodyPublishers
-                            .ofString(
-                        "grant_type=password" +
-                                "&username=" + username +
-                                "&password=" + password
-                            )
-                    )
-                    .build();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Supplier<AccessToken> buildAccessTokenSupplier() {
-        return Suppliers.memoizeWithExpiration(
-                this::fetchAccessToken,
-                58,
-                TimeUnit.MINUTES
-        );
-    }
-
-    private static String base64Encode(String content) {
-        return Base64.getEncoder().encodeToString(content.getBytes());
     }
 }

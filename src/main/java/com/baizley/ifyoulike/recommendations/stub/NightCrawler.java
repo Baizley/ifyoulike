@@ -30,8 +30,7 @@ public class NightCrawler implements RedditApi {
             return new ResponseKind<>(new Listing<>(new ArrayList<>()));
         }
 
-        Type type = new TypeToken<ResponseKind<Listing<Link>>>() {
-        }.getType();
+        Type type = new TypeToken<ResponseKind<Listing<Link>>>(){}.getType();
         try {
             return new Gson().fromJson(new JsonReader(new FileReader(searchStub.getFile())), type);
         } catch (IOException e) {
@@ -44,8 +43,7 @@ public class NightCrawler implements RedditApi {
             return CompletableFuture.completedFuture(new ArrayList<>());
         }
 
-        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>() {
-        }.getType();
+        Type type = new TypeToken<List<ResponseKind<Listing<Comment>>>>(){}.getType();
         try {
             List<ResponseKind<Listing<Comment>>> responseKinds = new Gson().fromJson(new JsonReader(new FileReader(threadStub.getFile())), type);
             return CompletableFuture.completedFuture(responseKinds);

@@ -31,7 +31,6 @@ public class IfYouLikeRecommender {
     }
 
     public List<CompletableFuture<List<Recommendation>>> fetchRecommendations(String blank) {
-
         List<Link> searchResults = performSearch(blank);
         
         return searchResults.stream()
