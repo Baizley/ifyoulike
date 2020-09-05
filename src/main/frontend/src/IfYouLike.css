@@ -12,12 +12,16 @@
 }
 
 .score {
-   position: absolute;
-   top: 0px;
-   left: 0px;
+  padding-left: 15px;
+  padding-top: 5px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
 .source {
+  padding-right: 15px;
+  padding-top: 5px;
   position: absolute;
   top: 0px;
   right: 0px;
@@ -30,14 +34,15 @@
 }
 
 .recommendations {
-  font-size: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 16px;
+  font-family: "Roboto", verdana, arial, helvetica, sans-serif;
   word-wrap: break-word;
 }
 
 .recommendation {
   position: relative;
-  padding: 12px;
+  padding: 15px;
+  border-radius: 20px;
   border: 2px solid #d6dee0;
   margin: 5px;
 }
