@@ -9,12 +9,14 @@ class IfYouLike extends React.Component {
         this.recommendationsBuffer = [];
         this.state = {recommendations: [], blank: this.readBlank()}
         this.intervalId = setInterval(
-            () => {
-                this.setState({recommendations: this.sortRecommendations([...this.state.recommendations, ...this.recommendationsBuffer])})
-                this.recommendationsBuffer = [];
-            },
+            () => this.renderBuffer(),
             100
         );
+    }
+
+    renderBuffer() {
+        this.setState({recommendations: this.sortRecommendations([...this.state.recommendations, ...this.recommendationsBuffer])})
+        this.recommendationsBuffer = [];
     }
 
     readBlank() {
@@ -46,6 +48,7 @@ class IfYouLike extends React.Component {
             (event) => {
                 eventSource.close();
                 clearInterval(this.intervalId);
+                this.renderBuffer();
             }
         )
     }
