@@ -1,5 +1,6 @@
 import React from 'react';
 import './IfYouLike.css';
+import 'font-awesome/css/font-awesome.min.css';
 import Recommendation from "./components/Recommendation";
 
 class IfYouLike extends React.Component {
