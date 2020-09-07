@@ -27,7 +27,7 @@ public class RecommendationService {
     public List<Recommendation> retrieveRecommendations(String blank) {
         var futures = ifYouLikeRecommender.fetchRecommendations(blank);
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         List<Recommendation> recommendations = new ArrayList<>();
 
         for (CompletableFuture<List<Recommendation>> future : futures) {

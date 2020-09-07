@@ -20,7 +20,7 @@ public class RedditAuthenticator {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final HttpRequest accessTokenRequest = buildAccessTokenRequest();
     private final Supplier<AccessToken> accessTokenSupplier = buildAccessTokenSupplier();
-    private Converter converter;
+    private final Converter converter;
 
     @Autowired
     public RedditAuthenticator(Converter converter) {
@@ -54,13 +54,13 @@ public class RedditAuthenticator {
                     .header("User-Agent", USER_AGENT)
                     .uri(new URI("https://www.reddit.com/api/v1/access_token"))
                     .POST(
-                            HttpRequest
-                                    .BodyPublishers
-                                    .ofString(
-                                            "grant_type=password" +
-                                                    "&username=" + username +
-                                                    "&password=" + password
-                                    )
+                        HttpRequest
+                            .BodyPublishers
+                            .ofString(
+                                "grant_type=password" +
+                                        "&username=" + username +
+                                        "&password=" + password
+                            )
                     )
                     .build();
         } catch (URISyntaxException e) {
