@@ -2,6 +2,7 @@ import React from 'react';
 import './IfYouLike.css';
 import 'font-awesome/css/font-awesome.min.css';
 import Recommendation from "./components/Recommendation";
+import Container from '@material-ui/core/Container';
 
 class IfYouLike extends React.Component {
 
@@ -56,12 +57,16 @@ class IfYouLike extends React.Component {
 
     render() {
         return (
-            <div class="center">
-                <div id="title">If you like <div id="blank">{this.capitalizeFirstLetters(decodeURIComponent(this.state.blank))}</div> then you might like</div>
-                <div class="recommendations">
-                    {this.state.recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation}/>)}
+            <Container maxWidth="sm">
+                <div id="title">If you like <div
+                    id="blank">{this.capitalizeFirstLetters(decodeURIComponent(this.state.blank))}</div> then you might
+                    like
                 </div>
-            </div>
+                <div className="recommendations">
+                    {this.state.recommendations.map((recommendation, index) => <Recommendation key={index}
+                                                                                               recommendation={recommendation}/>)}
+                </div>
+            </Container>
         );
     }
 }
