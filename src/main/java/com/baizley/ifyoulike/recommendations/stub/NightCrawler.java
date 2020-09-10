@@ -38,7 +38,7 @@ public class NightCrawler implements RedditApi {
         }
     }
 
-    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
+    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchComments(String articleId) {
         if (!"917p98".equals(articleId)) {
             return CompletableFuture.completedFuture(new ArrayList<>());
         }

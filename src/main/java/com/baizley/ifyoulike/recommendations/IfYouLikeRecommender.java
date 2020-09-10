@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -49,7 +48,7 @@ public class IfYouLikeRecommender {
     }
 
     private CompletableFuture<List<Recommendation>> toRecommendation(Link link) {
-        return redditApi.fetchCommentTree(link.id())
+        return redditApi.fetchComments(link.id())
                 .thenApply(this::extractComments)
                 .thenApply(comments -> constructRecommendations(link, comments));
     }

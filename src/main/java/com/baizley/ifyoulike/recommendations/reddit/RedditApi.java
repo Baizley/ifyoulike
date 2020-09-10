@@ -10,5 +10,5 @@ import java.util.concurrent.CompletableFuture;
 
 public interface RedditApi {
     ResponseKind<Listing<Link>> searchSubreddit(String blank);
-    CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId);
+    CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchComments(String articleId);
 }

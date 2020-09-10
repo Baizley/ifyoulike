@@ -61,7 +61,7 @@ public class Reddit implements RedditApi {
         }
     }
 
-    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchCommentTree(String articleId) {
+    public CompletableFuture<List<ResponseKind<Listing<Comment>>>> fetchComments(String articleId) {
         AccessToken accessToken = authenticator.getAccessToken();
 
         try {
