@@ -22,14 +22,6 @@
   position: relative;
 }
 
-@media (min-width: 600px) {
-  .center {
-    margin-left:auto;
-    margin-right:auto;
-    width: 30%;
-  }
-}
-
 .recommendation {
   padding: 15px;
   border-radius: 20px;

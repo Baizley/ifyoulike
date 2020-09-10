@@ -58,13 +58,15 @@ class IfYouLike extends React.Component {
     render() {
         return (
             <Container maxWidth="sm">
-                <div id="title">If you like <div
-                    id="blank">{this.capitalizeFirstLetters(decodeURIComponent(this.state.blank))}</div> then you might
-                    like
+                <div id="title">
+                    If you like
+                    <div id="blank">
+                        {this.capitalizeFirstLetters(decodeURIComponent(this.state.blank))}
+                    </div>
+                    then you might like
                 </div>
                 <div className="recommendations">
-                    {this.state.recommendations.map((recommendation, index) => <Recommendation key={index}
-                                                                                               recommendation={recommendation}/>)}
+                    {this.state.recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation}/>)}
                 </div>
             </Container>
         );
