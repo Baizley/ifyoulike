@@ -1,3 +1,7 @@
+body {
+  background-color: #eeeeee;
+}
+
 #title {
   font-family: "Berkshire Swash", verdana, arial, helvetica, sans-serif;
   font-size: 32px;
@@ -23,10 +27,14 @@
 }
 
 .recommendation {
+  background-color: white;
   padding: 15px;
-  border-radius: 20px;
-  border: 2px solid #d6dee0;
-  margin: 5px;
+  border-radius: 10px;
+  border: solid 2px #e0e0e0;
+  margin: 10px;
+  -webkit-box-shadow: 5px 5px 5px 0px rgba(51,51,51,0.26);
+  -moz-box-shadow: 5px 5px 5px 0px rgba(51,51,51,0.26);
+  box-shadow: 5px 5px 5px 0px rgba(51,51,51,0.26);
 }
 
 .recommendations {
