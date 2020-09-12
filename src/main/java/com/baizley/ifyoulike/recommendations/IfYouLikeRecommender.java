@@ -32,7 +32,7 @@ public class IfYouLikeRecommender {
 
     public List<CompletableFuture<List<Recommendation>>> fetchRecommendations(String blank) {
         List<Link> searchResults = performSearch(blank);
-        
+
         return searchResults.stream()
                 .map(this::toRecommendation)
                 .collect(Collectors.toList());
@@ -72,7 +72,12 @@ public class IfYouLikeRecommender {
     private List<Comment> extractComments(List<ResponseKind<Listing<Comment>>> thread) {
         return thread.stream()
                 .flatMap(this::extractComment)
+                .filter(this::isNotDeleted)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isNotDeleted(Comment comment) {
+        return !comment.body().equals("[deleted]");
     }
 
     private Stream<Comment> extractComment(ResponseKind<Listing<Comment>> kind) {
